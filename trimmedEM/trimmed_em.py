@@ -63,7 +63,8 @@ class TrimmedEM(object):
 
 
 def supp(x, sparsity):
-    return np.argsort(x)[:-sparsity]
+    """return the index of the top-sparsity largest elements in x"""
+    return np.argsort(x)[-sparsity:]
 
 
 def trimmed_em(X, Y, init_val, n_iters, step_size,
@@ -87,11 +88,12 @@ def trimmed_em(X, Y, init_val, n_iters, step_size,
     beta = trunc(init_val, S)
 
     for t in range(n_iters):
-        Q = grader.gradient(beta, X, Y)
+        Q = grader.gradient(X, Y, beta)
         Q = d_trim(Q, alpha)
-        beta_i = beta + step_size * Q
-        S_i = supp(beta_i, sparsity)
-        beta = trunc(beta_i, S_i)
+        beta_i = beta - step_size * Q
+        beta = trim(beta_i, sparsity)
+        # S_i = supp(beta_i, sparsity)
+        # beta = trunc(beta_i, S_i)
 
     return beta
 
@@ -107,6 +109,15 @@ def trunc(x, S):
     return trunc_x
 
 
+def trim(x, sparsity):
+    """retain the top-sparsity components of x
+    (equivalent to `trunc(x, supp(x, sparsity))`
+    """
+    to_be_trimmed = np.argsort(x)[:x.shape[0]-sparsity]
+    x[to_be_trimmed] = 0
+    return x
+
+
 def d_trim(V, alpha):
     """Dimensional alpha-trimmed estimator [Liu et al., 2019]
     :param V: array of shape=(n_samples, n_features), set of gradients
@@ -118,11 +129,9 @@ def d_trim(V, alpha):
     n_remove = min(int(n_samples * alpha), n_samples // 2)
     sorted_idxs = np.argsort(V, axis=0)
     # remove the largest and smallest alpha-fraction of samples on each dimension
-    retained_idxs =sorted_idxs[n_remove, n_samples - n_remove]
+    retained_idxs =sorted_idxs[n_remove: n_samples - n_remove]
 
     # TODO: too slow; try to avoid for-loop
-    g = np.zeros(n_features)
-    for i in range(n_features):
-        g[i] = np.average(V[retained_idxs[:, i], i])
+    g = np.array([np.average(V[retained_idxs[:, i], i]) for i in range(n_features)])
 
     return g
