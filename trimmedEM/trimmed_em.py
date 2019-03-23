@@ -7,12 +7,15 @@ Implementation for the main algorithm of paper
 # Author:  Xiangyu Guo  xiangyug[at]buffalo.edu
 
 import numpy as np
+from scipy.spatial.distance import euclidean
+from sklearn.exceptions import NotFittedError
 
 
 class TrimmedEM(object):
 
     def __init__(self, n_iters=100, eta=1e-3, sparsity=50,
-                 alpha=0.05, grader=None, init_val=None):
+                 alpha=0.05, grader=None, init_val=None,
+                 groundtruth=None, record_all_loss=False):
         """
         Trimmed Expectation Maximization
         :param n_iters: int. number of maximum iterations
@@ -24,6 +27,9 @@ class TrimmedEM(object):
                 (for updating the parameters) computed at each sample, which is of the same shape as
                 (n_samples, n_params).
         :param init_val: init value for the parameter vector
+        :param groundtruth: the true value of the paramter. used only for comparing cost per iteration.
+        :param record_all_loss: whether to record the loss for each iteration. not effective unless
+            the `true_val` is not None.
         """
         self.n_iters_ = n_iters
         self.eta_ = eta
@@ -36,9 +42,24 @@ class TrimmedEM(object):
         # TODO: specify the def for grader
         self.grader_ = grader
 
+        if record_all_loss and groundtruth is None:
+            raise ValueError("Can't compute costs when `groundtruth` is unknown.")
+        self.record_loss_ = record_all_loss
+        self.groundtruth_ = groundtruth
+        self.losses_ = None
+
     @property
     def beta(self):
         return self.beta_
+
+    @property
+    def iteration_losses(self):
+        return self.losses_
+
+    def loss(self, groundtruth):
+        if self.beta_ is None:
+            raise NotFittedError("Model hasn't been fitted")
+        return euclidean(self.beta_, groundtruth)
 
     def fit(self, X, Y, init_val=None):
         """
@@ -50,15 +71,20 @@ class TrimmedEM(object):
         beta = init_val if init_val else self.beta_
         if beta is None:
             raise ValueError("Parameter vector is not initialized properly")
-        self.beta_ = trimmed_em(X, Y,
-                                init_val=beta,
-                                n_iters=self.n_iters_,
-                                step_size=self.eta_,
-                                sparsity=self.sparsity_,
-                                alpha=self.alpha_,
-                                grader=self.grader_
-                                )
-
+        estimated_beta = trimmed_em(X, Y,
+                                    init_val=beta,
+                                    n_iters=self.n_iters_,
+                                    step_size=self.eta_,
+                                    sparsity=self.sparsity_,
+                                    alpha=self.alpha_,
+                                    grader=self.grader_,
+                                    groundtruth=self.groundtruth_,
+                                    return_costs=self.record_loss_
+                                    )
+        if self.record_loss_:
+            self.beta_, self.losses_ = estimated_beta
+        else:
+            self.beta_ = estimated_beta
         return self
 
 
@@ -68,7 +94,7 @@ def supp(x, sparsity):
 
 
 def trimmed_em(X, Y, init_val, n_iters, step_size,
-               sparsity, alpha, grader):
+               sparsity, alpha, grader, groundtruth=None, return_costs=False):
     """
     Trimmed Expectation Maximization algorithm
     :param X: array of shape=(n_samples, n_features)
@@ -82,20 +108,31 @@ def trimmed_em(X, Y, init_val, n_iters, step_size,
             Y is the array of labels, P is the array of parameters, and G is the array of gradients
             (for updating the parameters) computed at each sample, which is of the same shape as
             (n_samples, n_params).
+    :param groundtruth: true value of the parameter to be estimated
+    :param return_costs: whether to return cost for each iteration. not effective
+        unless `groundtruth` is not None.
     :return:
     """
     S = supp(init_val, sparsity)
     beta = trunc(init_val, S)
+    if return_costs and groundtruth is None:
+        raise ValueError("Can't compute costs when `groundtruth` is unknown.")
+    costs = []
 
     for t in range(n_iters):
         Q = grader.gradient(X, Y, beta)
         Q = d_trim(Q, alpha)
-        beta_i = beta - step_size * Q
+        beta_i = beta + step_size * Q
         beta = trim(beta_i, sparsity)
+        if return_costs:
+            costs.append(euclidean(groundtruth, beta))
         # S_i = supp(beta_i, sparsity)
         # beta = trunc(beta_i, S_i)
 
-    return beta
+    if return_costs:
+        return beta, np.array(costs)
+    else:
+        return beta
 
 
 def trunc(x, S):

@@ -14,7 +14,7 @@ class LRGrader(object):
     def gradient(self, X, Y, P):
         Y_hat = X.dot(P)
         g = X * (Y_hat-Y)[:, np.newaxis]
-        return g
+        return -g
 
 
 class TestUtils(unittest.TestCase):
