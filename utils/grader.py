@@ -69,8 +69,22 @@ def regression_mixture_grad(X, Y, beta, beta0, sigma):
 
 
 def regression_without_cov_grad(X, Y, beta, beta0, sigma):
-    Z = np.ones(shape=X.shape)
-    Z = np.nan_to_num(Z)
+    # TODO: the formula here must have some error because the gradient blows up
+    # TODO: Ask Di to fix it
+    Z = 1 - np.isnan(X)
+    X_obs = np.nan_to_num(X)
 
-    raise NotImplementedError("function not implemented")
+    # m.shape == (n_samples, n_features)
+    m = X_obs + ((Y - X_obs.dot(beta)) / \
+                 (sigma ** 2 + np.linalg.norm((1-Z) * beta, axis=1)))[:, np.newaxis] * \
+        (1-Z) * beta
+
+    # K.shape == (n_samples, n_features)
+    K = (1-Z) * beta0 + m * m.dot(beta0)[:, np.newaxis] - \
+        ((1-Z) * m) * ((1-Z) * m).dot(beta0)[:, np.newaxis]
+
+    # G.shape == (n_samples, n_features)
+    G = Y[:, np.newaxis] * m - K
+
+    return G
 
