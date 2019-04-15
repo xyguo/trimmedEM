@@ -8,12 +8,14 @@ from scipy.special import expit
 
 class Grader(object):
     """Abstract class for gradient computer"""
+
     def gradient(self, X, Y, P):
         pass
 
 
 class GMMGrader(Grader):
     """Gradient computer for Gaussian Mixture Model"""
+
     def __init__(self, sigma=1):
         self.sigma_ = sigma
 
@@ -23,6 +25,7 @@ class GMMGrader(Grader):
 
 class MRMGrader(Grader):
     """Gradient computer for Mixture of Regression Model"""
+
     def __init__(self, sigma=1):
         self.sigma_ = sigma
 
@@ -32,6 +35,7 @@ class MRMGrader(Grader):
 
 class RMCGrader(Grader):
     """Gradient computer for Regression with Missing Covariance model"""
+
     def __init__(self, sigma=1):
         self.sigma_ = sigma
 
@@ -64,27 +68,25 @@ def regression_mixture_grad(X, Y, beta, beta0, sigma):
     :return G:
     """
     w = expit((X.dot(beta) * Y) / (sigma ** 2))
-    G = (2 * w * Y)[:, np.newaxis] * X - X.dot(beta0)[:, np.newaxis] * X
+    G = ((2 * w - 1) * Y)[:, np.newaxis] * X - X.dot(beta0)[:, np.newaxis] * X
     return G
 
 
 def regression_without_cov_grad(X, Y, beta, beta0, sigma):
-    # TODO: the formula here must have some error because the gradient blows up
-    # TODO: Ask Di to fix it
     Z = 1 - np.isnan(X)
     X_obs = np.nan_to_num(X)
 
     # m.shape == (n_samples, n_features)
-    m = X_obs + ((Y - X_obs.dot(beta)) / \
-                 (sigma ** 2 + np.linalg.norm((1-Z) * beta, axis=1)))[:, np.newaxis] * \
-        (1-Z) * beta
+    m = X_obs + ((Y - X_obs.dot(beta)) /
+                 (sigma ** 2 + np.linalg.norm((1 - Z) * beta, axis=1, ord=2)))[:, np.newaxis] * \
+        (1 - Z) * beta
 
     # K.shape == (n_samples, n_features)
-    K = (1-Z) * beta0 + m * m.dot(beta0)[:, np.newaxis] - \
-        ((1-Z) * m) * ((1-Z) * m).dot(beta0)[:, np.newaxis]
+    K = (1 - Z) * beta0 + m * m.dot(beta0)[:, np.newaxis] - \
+        (1 / (sigma ** 2 + np.linalg.norm((1 - Z) * beta, axis=1, ord=2)))[:, np.newaxis] * \
+        ((1 - Z) * beta0) * ((1 - Z) * beta0).dot(beta0)[:, np.newaxis]
 
     # G.shape == (n_samples, n_features)
     G = Y[:, np.newaxis] * m - K
 
     return G
-
