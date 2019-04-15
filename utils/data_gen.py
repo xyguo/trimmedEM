@@ -177,7 +177,12 @@ def add_outliers(X, n_outliers, dist_factor=10, replace=True,
     np.random.seed(random_state)
     n_samples, n_features = X.shape
     assert n_outliers < n_samples
-    shift = max(np.mean(np.linalg.norm(X, axis=1)), 1.0)
+
+    # calculate the shift
+    X_valid = np.abs(X.ravel())
+    X_valid = X_valid[np.logical_not(np.isnan(X_valid))]
+    shift = max(np.max(X_valid) * np.sqrt(n_features), 1.0)
+
     outlier_idxs = np.random.choice(n_samples, n_outliers, replace=False)
     outliers_shift = np.random.multivariate_normal(np.zeros(n_features),
                                                    np.identity(n_features) * dist_factor * shift,
