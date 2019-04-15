@@ -126,8 +126,6 @@ def trimmed_em(X, Y, init_val, n_iters, step_size,
         beta = trim(beta_i, sparsity)
         if return_costs:
             costs.append(euclidean(groundtruth, beta))
-        # S_i = supp(beta_i, sparsity)
-        # beta = trunc(beta_i, S_i)
 
     if return_costs:
         return beta, np.array(costs)
