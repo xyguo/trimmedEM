@@ -4,7 +4,7 @@ from trimmedEM import TrimmedEM
 from utils.grader import GMMGrader
 from utils.data_gen import gaussian_mixture, add_outliers
 
-# Experiment for Mixture of Regression Model
+# Experiment for the Gaussian Mixture Model (GMM)
 epsilons = [0, 0.05, 0.1, 0.15, 0.2]
 n_samples = 2000
 gmm_sigma = 0.5

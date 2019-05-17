@@ -4,7 +4,7 @@ from trimmedEM import TrimmedEM
 from utils.grader import RMCGrader
 from utils.data_gen import regression_with_missing_cov, add_outliers
 
-# Experiment for Mixture of Regression Model
+# Experiment for the Regression with Missing Covariates (RMC) Model
 epsilons = [0, 0.05, 0.1, 0.15, 0.2]
 n_samples = 2000
 rmc_sigma = 0.1
