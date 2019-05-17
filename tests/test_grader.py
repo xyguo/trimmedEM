@@ -2,7 +2,6 @@ import unittest
 import numpy as np
 
 from utils.grader import (
-    GMMGrader, MRMGrader, RMCGrader,
     gaussian_mixture_grad, regression_mixture_grad, regression_without_cov_grad
 )
 

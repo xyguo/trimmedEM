@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Helper functions for creating synthesized data"""
-# Author: Xiangyu Guo     xiangyug[at]buffalo.edu
+# Author: e78c3441e9ae030d3d335b90aaf253f9 (intentionally hidden for the review process)
 
 import numpy as np
 import scipy as sp

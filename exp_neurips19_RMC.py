@@ -6,11 +6,12 @@ from utils.data_gen import regression_with_missing_cov, add_outliers
 
 # Experiment for Mixture of Regression Model
 epsilons = [0, 0.05, 0.1, 0.15, 0.2]
-n_samples = 1000
+n_samples = 2000
 rmc_sigma = 0.1
 dim = 100
 # sparsities = np.array([0.4, 0.2, 0.1, 0.05]) * dim
-sparsities = np.array([11, 9, 7, 5, 3])
+# sparsities = np.array([32, 24, 16, 12, 8, 4, 2])
+sparsities = np.array([15, 13, 11, 9, 7, 5, 3])
 sparsities = sparsities.astype(np.int)
 
 rmc_g = RMCGrader(sigma=rmc_sigma)
@@ -22,6 +23,7 @@ results_RMC = {
     'dim-1': dim,
     'true-beta-1': [],
 }
+n_iters = 101
 n_repeats = 20
 ## type 1: error v.s. n_samples / (sparsity * log(dim)), for different epsilon
 print("==================\ntype 1: error v.s. n_samples / (sparsity * log(dim)), for different epsilon")
@@ -50,17 +52,18 @@ for r in range(n_repeats):
 
             # set initial point for gradient descent
             init_distortion = np.linalg.norm(true_beta) * \
-                              np.random.randn(results_RMC['dim-1']) / (32 * np.sqrt(dim))
+                              np.random.randn(results_RMC['dim-1']) / \
+                              (4 * np.sqrt(dim))
             beta0 = true_beta + init_distortion
 
-            model = TrimmedEM(n_iters=50,
+            model = TrimmedEM(n_iters=n_iters,
                               eta=0.05, sparsity=s,
                               alpha=0.3, grader=rmc_g,
                               init_val=beta0)
             model.fit(X, Y_corrupted)
             err_rates[i].append(model.loss(groundtruth=true_beta))
-            print("eps={}, sparsity={}, loss={}, loss / true_beta={}"
-                  .format(eps, s, err_rates[i][-1], err_rates[i][-1] / np.linalg.norm(true_beta)))
+            # print("eps={}, sparsity={}, loss={}, loss / true_beta={}"
+            #       .format(eps, s, err_rates[i][-1], err_rates[i][-1] / np.linalg.norm(true_beta)))
     results_RMC['err-1'].append(np.array(err_rates))
 results_RMC['err-1'] = np.array(results_RMC['err-1'])
 results_RMC['true-beta-1'] = results_RMC['true-beta-1']
@@ -74,7 +77,6 @@ print(np.mean(results_RMC['err-1'], axis=0) / true_beta_norms)
 ## type 2: error v.s. n_iterations, for different epsilon
 print("===============\nType 2: error v.s. n_iterations, for different eps\n")
 dim = 100
-n_iters = 50
 true_sparsity = 4
 epsilons = [0, 0.05, 0.1, 0.15, 0.2]
 
@@ -101,7 +103,7 @@ for r in range(n_repeats):
     for i, eps in enumerate(results_RMC['eps-2']):
         init_distortion = np.linalg.norm(results_RMC['true-beta-2']) * \
                           np.random.randn(results_RMC['dim-2']) / \
-                          (32 * np.sqrt(results_RMC['dim-2']))
+                          (10 * np.sqrt(results_RMC['dim-2']))
         beta0 = results_RMC['true-beta-2'][-1] + init_distortion
         n_outliers = np.int(results_RMC['n_samples-2'] * eps)
 
@@ -111,7 +113,8 @@ for r in range(n_repeats):
                           dist_factor=50)
         X_corrupted, Y_corrupted = XY[:, :-1], XY[:, -1].ravel()
 
-        model = TrimmedEM(n_iters=50, eta=0.05, sparsity=results_RMC['sparsity-2'],
+        model = TrimmedEM(n_iters=n_iters, eta=0.1,
+                          sparsity=results_RMC['sparsity-2'],
                           alpha=0.3, grader=rmc_g,
                           init_val=beta0,
                           groundtruth=results_RMC['true-beta-2'][-1],
@@ -133,7 +136,6 @@ print(np.mean(results_RMC['err-2'] /
 
 ## type III: error v.s. n_iterations, for different dim
 print("=================\ntype III: error v.s. n_iterations, for different dim")
-n_iters = 50
 results_RMC['eps-3'] = 0.2
 results_RMC['err-3'] = []
 results_RMC['n_samples-3'] = n_samples
@@ -153,7 +155,7 @@ for r in range(n_repeats):
         true_beta[effective_idxs] = 10
         init_distortion = np.linalg.norm(true_beta) * \
                           np.random.randn(d) / \
-                          (32 * np.sqrt(d))
+                          (4 * np.sqrt(d))
         beta0 = true_beta + init_distortion
 
         if r == 0:
@@ -170,14 +172,14 @@ for r in range(n_repeats):
                           dist_factor=50)
         X_corrupted, Y_corrupted = XY[:, :-1], XY[:, -1].ravel()
 
-        model = TrimmedEM(n_iters=50, eta=0.05,
+        model = TrimmedEM(n_iters=n_iters, eta=0.08,
                           sparsity=results_RMC['sparsity-3'],
                           alpha=0.3, grader=rmc_g,
                           init_val=beta0,
                           groundtruth=true_beta, record_all_loss=True)
         model.fit(X, Y_corrupted)
         err_rates.append(model.iteration_losses)
-        print("dim={}, final_loss={}".format(d, err_rates[-1][-1]))
+        # print("dim={}, final_loss={}".format(d, err_rates[-1][-1]))
     results_RMC['err-3'].append(np.array(err_rates))
 results_RMC['err-3'] = np.array(results_RMC['err-3'])
 true_beta_norm = np.array([np.linalg.norm(x) for x in results_RMC['true-beta-3']])
@@ -185,6 +187,7 @@ print("err-3:")
 # print(np.min(np.mean(results_RMC['err-3'], axis=0), axis=1) / true_beta_norm)
 print(np.mean(results_RMC['err-3'], axis=0)[:, -1] / true_beta_norm)
 
-filename_RMC = "results_for_RMC_20190318"
+filename_RMC = "results_for_RMC_20190513"
 np.savez(filename_RMC, **results_RMC)
 
+sys.exit(0)

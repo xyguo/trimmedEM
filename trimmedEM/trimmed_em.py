@@ -4,7 +4,7 @@ Implementation for the main algorithm of paper
 
 `Estimating High Dimensional Robust Mixture Model via TrimmedExpectation-Maximization Algorithm`
 """
-# Author:  Xiangyu Guo  xiangyug[at]buffalo.edu
+# Author: e78c3441e9ae030d3d335b90aaf253f9 (intentionally hidden for the review process)
 
 import numpy as np
 from scipy.spatial.distance import euclidean
@@ -122,10 +122,13 @@ def trimmed_em(X, Y, init_val, n_iters, step_size,
     for t in range(n_iters):
         Q = grader.gradient(X, Y, beta)
         Q = d_trim(Q, alpha)
+        # Q = np.clip(Q, a_min=-100, a_max=100)
         beta_i = beta + step_size * Q
         beta = trim(beta_i, sparsity)
         if return_costs:
             costs.append(euclidean(groundtruth, beta))
+        # S_i = supp(beta_i, sparsity)
+        # beta = trunc(beta_i, S_i)
 
     if return_costs:
         return beta, np.array(costs)
@@ -167,6 +170,6 @@ def d_trim(V, alpha):
     retained_idxs =sorted_idxs[n_remove: n_samples - n_remove]
 
     # TODO: too slow; try to avoid for-loop
-    g = np.array([np.average(V[retained_idxs[:, i], i]) for i in range(n_features)])
+    g = np.average(np.array([V[retained_idxs[:, i], i] for i in range(n_features)]), axis=1)
 
     return g

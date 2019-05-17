@@ -6,11 +6,12 @@ from utils.data_gen import gaussian_mixture, add_outliers
 
 # Experiment for Mixture of Regression Model
 epsilons = [0, 0.05, 0.1, 0.15, 0.2]
-n_samples = 1000
+n_samples = 2000
 gmm_sigma = 0.5
 dim = 100
 # sparsities = np.array([0.4, 0.2, 0.1, 0.05]) * dim
-sparsities = np.array([11, 9, 7, 5, 3])
+sparsities = np.array([15, 13, 11, 9, 7, 5, 3])
+# sparsities = np.array([32, 24, 16, 12, 8, 4, 2])
 sparsities = sparsities.astype(np.int)
 
 gmm_g = GMMGrader(sigma=gmm_sigma)
@@ -22,7 +23,8 @@ results_GMM = {
     'dim-1': dim,
     'true-beta-1': [],
 }
-n_repeats = 2
+n_iters = 51
+n_repeats = 20
 ## type 1: error v.s. n_samples / (sparsity * log(dim)), for different epsilon
 print("==================\ntype 1: error v.s. n_samples / (sparsity * log(dim)), for different epsilon")
 for r in range(n_repeats):
@@ -48,8 +50,8 @@ for r in range(n_repeats):
                               np.random.randn(results_GMM['dim-1']) / (4 * np.sqrt(dim))
             beta0 = true_beta + init_distortion
 
-            model = TrimmedEM(n_iters=50,
-                              eta=0.01, sparsity=s,
+            model = TrimmedEM(n_iters=n_iters,
+                              eta=0.1, sparsity=s,
                               alpha=0.2, grader=gmm_g,
                               init_val=beta0)
             model.fit(X_corrupted, Y=None)
@@ -68,7 +70,6 @@ print(np.mean(results_GMM['err-1'], axis=0) / true_beta_norms)
 
 ## type 2: error v.s. n_iterations, for different epsilon
 print("===============\nType 2: error v.s. n_iterations, for different eps\n")
-n_iters = 50
 true_sparsity = 7
 dim = 100
 epsilons = [0, 0.05, 0.1, 0.15, 0.2]
@@ -99,7 +100,8 @@ for r in range(n_repeats):
         X_corrupted = add_outliers(X,
                                    n_outliers=n_outliers,
                                    dist_factor=50)
-        model = TrimmedEM(n_iters=50, eta=0.5, sparsity=results_GMM['sparsity-2'],
+        model = TrimmedEM(n_iters=n_iters, eta=0.1,
+                          sparsity=results_GMM['sparsity-2'],
                           alpha=0.2, grader=gmm_g,
                           init_val=beta0,
                           groundtruth=results_GMM['true-beta-2'][-1],
@@ -122,7 +124,6 @@ print(np.mean(results_GMM['err-2'] /
 
 ## type III: error v.s. n_iterations, for different dim
 print("=================\ntype III: error v.s. n_iterations, for different dim")
-n_iters = 50
 results_GMM['eps-3'] = 0.2
 results_GMM['err-3'] = []
 results_GMM['n_samples-3'] = n_samples
@@ -153,7 +154,7 @@ for r in range(n_repeats):
         X_corrupted = add_outliers(X,
                                    n_outliers=n_outliers,
                                    dist_factor=50)
-        model = TrimmedEM(n_iters=50, eta=0.1,
+        model = TrimmedEM(n_iters=n_iters, eta=0.1,
                           sparsity=results_GMM['sparsity-3'],
                           alpha=0.2, grader=gmm_g,
                           init_val=beta0,
@@ -168,6 +169,7 @@ print("err-3:")
 # print(np.min(np.mean(results_GMM['err-3'], axis=0), axis=1) / true_beta_norm)
 print(np.mean(results_GMM['err-3'], axis=0)[:, -1] / true_beta_norm)
 
-filename_GMM = "results_for_GMM_20190318"
-# np.savez(filename_GMM, **results_GMM)
+filename_GMM = "results_for_GMM_20190502"
+np.savez(filename_GMM, **results_GMM)
 
+sys.exit(0)
