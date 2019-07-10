@@ -1,4 +1,9 @@
-# Code implementation for paper "Estimating High Dimensional Robust Mixture Model via Trimmed Expectation-Maximization Algorithm"
+# Trimmed Expectation-Maximization Algorithm for high-dimension noisy data
+
+This is the experiment code implementation for paper 
+> Estimating High Dimensional Robust Mixture Model via Trimmed Expectation-Maximization Algorithm
+
+> Di Wang, X. Guo, Shi Li, Jinhui Xu
 
 # Remark
 
