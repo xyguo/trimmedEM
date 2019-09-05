@@ -122,7 +122,11 @@ def trimmed_em(X, Y, init_val, n_iters, step_size,
     for t in range(n_iters):
         Q = grader.gradient(X, Y, beta)
         Q = d_trim(Q, alpha)
-        # Q = np.clip(Q, a_min=-100, a_max=100)
+
+        # normalize Q to avoid gradient explosion
+        max_Q = np.abs(Q.max())
+        if max_Q > 1e3:
+            Q = Q / max_Q * 1000
         beta_i = beta + step_size * Q
         beta = trim(beta_i, sparsity)
         if return_costs:
