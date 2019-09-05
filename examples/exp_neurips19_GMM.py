@@ -8,7 +8,7 @@ from utils.data_gen import gaussian_mixture, add_outliers
 epsilons = [0, 0.05, 0.1, 0.15, 0.2]
 n_samples = 2000
 gmm_sigma = 0.5
-dim = 100
+dim = 500
 # sparsities = np.array([0.4, 0.2, 0.1, 0.05]) * dim
 sparsities = np.array([15, 13, 11, 9, 7, 5, 3])
 # sparsities = np.array([32, 24, 16, 12, 8, 4, 2])
@@ -24,7 +24,7 @@ results_GMM = {
     'true-beta-1': [],
 }
 n_iters = 51
-n_repeats = 20
+n_repeats = 1
 ## type 1: error v.s. n_samples / (sparsity * log(dim)), for different epsilon
 print("==================\ntype 1: error v.s. n_samples / (sparsity * log(dim)), for different epsilon")
 for r in range(n_repeats):
@@ -71,7 +71,7 @@ print(np.mean(results_GMM['err-1'], axis=0) / true_beta_norms)
 ## type 2: error v.s. n_iterations, for different epsilon
 print("===============\nType 2: error v.s. n_iterations, for different eps\n")
 true_sparsity = 7
-dim = 100
+dim = 500
 epsilons = [0, 0.05, 0.1, 0.15, 0.2]
 
 results_GMM['eps-2'] = np.array(epsilons)
@@ -156,7 +156,7 @@ for r in range(n_repeats):
                                    dist_factor=50)
         model = TrimmedEM(n_iters=n_iters, eta=0.1,
                           sparsity=results_GMM['sparsity-3'],
-                          alpha=0.2, grader=gmm_g,
+                          alpha=0.3, grader=gmm_g,
                           init_val=beta0,
                           groundtruth=true_beta, record_all_loss=True)
         model.fit(X_corrupted, Y=None)
@@ -169,7 +169,7 @@ print("err-3:")
 # print(np.min(np.mean(results_GMM['err-3'], axis=0), axis=1) / true_beta_norm)
 print(np.mean(results_GMM['err-3'], axis=0)[:, -1] / true_beta_norm)
 
-filename_GMM = "results_for_GMM_20190502"
-np.savez(filename_GMM, **results_GMM)
+filename_GMM = "../results_for_GMM_20190830"
+# np.savez(filename_GMM, **results_GMM)
 
 sys.exit(0)

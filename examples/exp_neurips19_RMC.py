@@ -58,7 +58,7 @@ for r in range(n_repeats):
 
             model = TrimmedEM(n_iters=n_iters,
                               eta=0.05, sparsity=s,
-                              alpha=0.3, grader=rmc_g,
+                              alpha=0.0, grader=rmc_g,
                               init_val=beta0)
             model.fit(X, Y_corrupted)
             err_rates[i].append(model.loss(groundtruth=true_beta))
@@ -115,7 +115,7 @@ for r in range(n_repeats):
 
         model = TrimmedEM(n_iters=n_iters, eta=0.1,
                           sparsity=results_RMC['sparsity-2'],
-                          alpha=0.3, grader=rmc_g,
+                          alpha=0.0, grader=rmc_g,
                           init_val=beta0,
                           groundtruth=results_RMC['true-beta-2'][-1],
                           record_all_loss=True)
@@ -174,7 +174,7 @@ for r in range(n_repeats):
 
         model = TrimmedEM(n_iters=n_iters, eta=0.08,
                           sparsity=results_RMC['sparsity-3'],
-                          alpha=0.3, grader=rmc_g,
+                          alpha=0.0, grader=rmc_g,
                           init_val=beta0,
                           groundtruth=true_beta, record_all_loss=True)
         model.fit(X, Y_corrupted)
@@ -187,7 +187,7 @@ print("err-3:")
 # print(np.min(np.mean(results_RMC['err-3'], axis=0), axis=1) / true_beta_norm)
 print(np.mean(results_RMC['err-3'], axis=0)[:, -1] / true_beta_norm)
 
-filename_RMC = "results_for_RMC_20190513"
+filename_RMC = "../no_trim_results_for_RMC_20190829"
 np.savez(filename_RMC, **results_RMC)
 
 sys.exit(0)

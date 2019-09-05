@@ -59,7 +59,7 @@ for r in range(n_repeats):
 
             model = TrimmedEM(n_iters=n_iters,
                               eta=0.1, sparsity=s,
-                              alpha=0.2, grader=mrm_g,
+                              alpha=0.0, grader=mrm_g,
                               init_val=beta0)
             model.fit(X_corrupted, Y_corrupted)
             err_rates[i].append(model.loss(groundtruth=true_beta))
@@ -114,7 +114,7 @@ for r in range(n_repeats):
 
         model = TrimmedEM(n_iters=n_iters, eta=0.1,
                           sparsity=results_MRM['sparsity-2'],
-                          alpha=0.2, grader=mrm_g,
+                          alpha=0.0, grader=mrm_g,
                           init_val=beta0,
                           groundtruth=results_MRM['true-beta-2'][-1],
                           record_all_loss=True)
@@ -173,7 +173,7 @@ for r in range(n_repeats):
 
         model = TrimmedEM(n_iters=n_iters, eta=0.1,
                           sparsity=results_MRM['sparsity-3'],
-                          alpha=0.2, grader=mrm_g,
+                          alpha=0.0, grader=mrm_g,
                           init_val=beta0,
                           groundtruth=true_beta, record_all_loss=True)
         model.fit(X_corrupted, Y_corrupted)
@@ -186,7 +186,7 @@ print("err-3:")
 # print(np.min(np.mean(results_MRM['err-3'], axis=0), axis=1) / true_beta_norm)
 print(np.mean(results_MRM['err-3'], axis=0)[:, -1] / true_beta_norm)
 
-filename_MRM = "results_for_MRM_20190502"
+filename_MRM = "../results_for_MRM_20190830"
 np.savez(filename_MRM, **results_MRM)
 
 sys.exit(0)
