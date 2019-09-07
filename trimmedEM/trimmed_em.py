@@ -3,8 +3,10 @@
 Implementation for the main algorithm of paper
 
 `Estimating High Dimensional Robust Mixture Model via TrimmedExpectation-Maximization Algorithm`
+
+Author: Di Wang, Xiangyu Guo, Shi Li, Jinhui Xu
 """
-# Author: e78c3441e9ae030d3d335b90aaf253f9 (intentionally hidden for the review process)
+# Code Author: Xiangyu Guo
 
 import numpy as np
 from scipy.spatial.distance import euclidean

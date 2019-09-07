@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Helper classes for calculating gradients for some simple modes"""
-# Author: e78c3441e9ae030d3d335b90aaf253f9 (intentionally hidden for the review process)
+# Code Author: Xiangyu Guo
 
 import numpy as np
 from scipy.special import expit
